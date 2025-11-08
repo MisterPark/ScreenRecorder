@@ -13,7 +13,12 @@ namespace ScreenRecorder
 {
     public partial class Form1 : Form
     {
-        private ScreenRecorder _recorder;
+        private ScreenRecorder recorder;
+        private AudioRecorder audio;
+        private VideoRecorder video;
+
+        private ScreenAudioRecorder _rec;
+
         public Form1()
         {
             InitializeComponent();
@@ -58,14 +63,14 @@ namespace ScreenRecorder
         {
             using (var sfd = new SaveFileDialog())
             {
-                sfd.Filter = "MP4 files (*.mp4)|*.mp4";
+                sfd.Filter = "AVI files (*.avi)|*.avi";
                 sfd.FileName = Path.GetFileName(txtPath.Text);
                 if (sfd.ShowDialog(this) == DialogResult.OK)
                     txtPath.Text = sfd.FileName;
             }
         }
 
-        private async void btnStart_Click(object sender, EventArgs e)
+        private void btnStart_Click(object sender, EventArgs e)
         {
             if (cboScreen.SelectedIndex < 0)
             {
@@ -82,8 +87,29 @@ namespace ScreenRecorder
 
             try
             {
-                _recorder = new ScreenRecorder(path, bounds.Size, fps, quality, includeCursor, bounds.Location);
-                await _recorder.StartAsync();
+                //recorder = new ScreenRecorder(path, fps);
+                //recorder.StartRecording();
+
+                //video = new VideoRecorder(path, fps);
+                //video.StartRecording();
+
+                //audio = new AudioRecorder(path);
+                //audio.StartRecording();
+
+                // 저장 경로
+                if(string.IsNullOrEmpty(path))
+                {
+                    path = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    $"capture_{DateTime.Now:yyyyMMdd_HHmmss}.avi");
+                }
+
+                // 기본: 기본 모니터 전체
+                var area = Screen.PrimaryScreen.Bounds;
+
+                // fps 30 권장
+                _rec = new ScreenAudioRecorder(path, 30, area);
+                _rec.Start();
 
                 btnStart.Enabled = false;
                 btnStop.Enabled = true;
@@ -97,13 +123,20 @@ namespace ScreenRecorder
             }
         }
 
-        private async void btnStop_Click(object sender, EventArgs e)
+        private void btnStop_Click(object sender, EventArgs e)
         {
             btnStop.Enabled = false;
             try
             {
-                if (_recorder != null)
-                    await _recorder.StopAsync();
+                //if (recorder != null)
+                //    recorder.StopRecording();
+
+                //video.StopRecording();
+
+                //audio.StopRecording();
+
+                _rec?.Stop();
+                _rec = null;
 
                 MessageBox.Show("저장 완료: " + txtPath.Text);
             }
@@ -113,7 +146,7 @@ namespace ScreenRecorder
             }
             finally
             {
-                _recorder = null;
+                recorder = null;
                 btnStart.Enabled = true;
                 btnBrowse.Enabled = true;
                 cboScreen.Enabled = true;

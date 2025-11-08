@@ -73,7 +73,7 @@
             this.numFps.Size = new System.Drawing.Size(120, 21);
             this.numFps.TabIndex = 2;
             this.numFps.Value = new decimal(new int[] {
-            70,
+            30,
             0,
             0,
             0});
